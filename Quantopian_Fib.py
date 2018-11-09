@@ -17,7 +17,7 @@ High = 1
 
 style.use('ggplot')
 
-start = dt.datetime(2015,01,01)
+start = dt.datetime(2017,01,01)
 end = dt.datetime(2018,11,07)
 ticker = 'SPY'
 
@@ -41,89 +41,6 @@ def Agent_1(bank_account, stocks, df, t):
 		return choice, shares
 	else:
 		return 'none', 0
-#Fib 5
-def Agent_5(bank_account, stocks, df, t, Low, High, buy_price, sell_price, last, high_dummy, low_dummy,trigger, buy_target):
-	period = 14
-	if last == 'Sell' or last == 'none':
-		Low = 1000
-		High = 1
-		for t in range(t-period,t):
-			if df['Adj Close'][t-period] <= Low:
-				Low = df['Adj Close'][t-period]
-				low_dummy = t-period
-			if df['Adj Close'][t-period] >= High: 
-				High = df['Adj Close'][t-period]
-				high_dummy = t-period
-		if high_dummy > low_dummy:	
-			fib_target = High-.382*(High-Low)
-			sell_target = High + .618*(High-Low)
-			if df['Adj Close'][t] >= fib_target-.005*fib_target and df['Adj Close'][t] <= fib_target+.005*fib_target:
-				buy_target = High + High*.00025
-				trigger = 'yes'
-				return 'none', 0, high_dummy, High, Low, low_dummy, trigger, buy_target
-			if trigger =='yes' and df['Adj Close'][t] >= buy_target-.0025*buy_target and df['Adj Close'][t] <= buy_target+.005*buy_target and bank_account >= df['Adj Close'][t]:
-				print 'enter'
-				choice = 'Buy'
-				shares = math.floor(bank_account/df['Adj Close'][t])
-				return choice, shares, high_dummy, High, Low, low_dummy, trigger, buy_target
-		return 'none', 0, high_dummy, High, Low, low_dummy, trigger, buy_target		
-
-	if last == 'Buy':
-		sell_target = High + .618*(High-Low)
-		print High, buy_price, sell_target
-		#stop loss
-		if df['Adj Close'][t] <= (buy_price - .02*buy_price) and stocks > 0:
-			choice = 'Sell'
-			shares = stocks
-			return choice, shares, high_dummy, High, Low, low_dummy, trigger, buy_target
-		if df['Adj Close'][t] >= High + .382*(High-Low):
-			choice = 'Sell'
-			shares = math.ceil(stocks/2)
-			return choice, shares, high_dummy, High, Low, low_dummy, trigger, buy_target
-		if df['Adj Close'][t] >= sell_target-.001*sell_target and stocks > 0:
-			choice = 'Sell'
-			shares = stocks
-			return choice, shares, high_dummy, High, Low, low_dummy, trigger, buy_target
-		return 'none', 0, high_dummy, High, Low, low_dummy, trigger, buy_target
-
-#rolling fib agent
-def Agent_6(bank_account, stocks, df, t, Low, High, buy_price, sell_price, last, trigger, buy_target):
-	period = 14
-	# ~ if last == 'Sell' or last == 'none':
-	if stocks == 0:
-		beta = df['Adj Close'].rolling(window = period, min_periods = 0).min()
-		alpha = df['Adj Close'].rolling(window = period, min_periods = 0).max()
-		Low = float(beta[t])
-		High = float(alpha[t])
-		fib_target = High-.382*(High-Low)
-		sell_target = High + .618*(High - Low)
-		if df['Adj Close'][t] >= fib_target-.005*fib_target and df['Adj Close'][t] <= fib_target+.005*fib_target:
-			buy_target = High + High*.00025
-			trigger = 'yes'
-			return 'none', 0, High, Low, trigger, buy_target
-		if trigger =='yes' and df['Adj Close'][t] >= buy_target-.0025*buy_target and df['Adj Close'][t] <= buy_target+.005*buy_target and bank_account >= df['Adj Close'][t]:
-			choice = 'Buy'
-			shares = math.floor(bank_account/df['Adj Close'][t])
-			return choice, shares, High, Low, trigger, buy_target
-		return 'none', 0, High, Low, trigger, buy_target	
-	# ~ if last == 'Buy':
-	if stocks > 0:
-		sell_target = High + .618*(High-Low)
-		# ~ print High, buy_price, sell_target
-		#stop loss
-		if df['Adj Close'][t] <= (buy_price - .02*buy_price) and stocks > 0:
-			choice = 'Sell'
-			shares = stocks
-			return choice, shares, High, Low, trigger, buy_target
-		if df['Adj Close'][t] >= High + .382*(High-Low):
-			choice = 'Sell'
-			shares = math.ceil(stocks/2)
-			return choice, shares, High, Low, trigger, buy_target
-		if df['Adj Close'][t] >= sell_target-.001*sell_target and stocks > 0:
-			choice = 'Sell'
-			shares = stocks
-			return choice, shares, High, Low, trigger, buy_target
-		return 'none', 0 , High, Low, trigger, buy_target
 
 def agent_7(bank_account, stocks, df, t, Low, High, buy_price, sell_price, buy_target, sell_target, x, last):
 	period = 10
